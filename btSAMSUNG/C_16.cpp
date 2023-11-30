@@ -1,86 +1,61 @@
-
 #include <bits/stdc++.h>
+#define fi first
+#define se second
 using namespace std;
+typedef pair<int,int> ii;
+typedef pair<int,ii> iii;
+const int maxn = 15005;
+int n, m, p[maxn], res = 0;
+vector<ii> vec[maxn];
+iii e[maxn];
 
-
-int V;
-
-int minKey(int key[], bool mstSet[])
+int get(int u)
 {
-
-	int min = INT_MAX, min_index;
-
-	for (int v = 0; v < V; v++)
-		if (mstSet[v] == false && key[v] < min)
-			min = key[v], min_index = v;
-
-	return min_index;
+    if(p[u] == 0)
+    {
+        return u;
+    }
+    p[u] = get(p[u]);
+    return p[u];
 }
-
-
-void printMST(int parent[], int graph[V][V])
+void unio(int u,int v)
 {
-	cout << "Edge \tWeight\n";
-	for (int i = 1; i < V; i++)
-		cout << parent[i] << " - " << i << " \t"
-			<< graph[i][parent[i]] << " \n";
+    int x = get(u);
+    int y = get(v);
+    if(x != y)
+    {
+        p[x] = y;
+    }
 }
-
-
-void primMST(int graph[V][V])
-{
-
-	int parent[V];
-
-
-	int key[V];
-
-
-	bool mstSet[V];
-
-
-	for (int i = 0; i < V; i++)
-		key[i] = INT_MAX, mstSet[i] = false;
-
-
-	key[0] = 0;
-
-
-	parent[0] = -1;
-
-
-	for (int count = 0; count < V - 1; count++) {
-
-
-		int u = minKey(key, mstSet);
-
-
-		mstSet[u] = true;
-
-
-		for (int v = 0; v < V; v++)
-
-
-			if (graph[u][v] && mstSet[v] == false
-				&& graph[u][v] < key[v])
-				parent[v] = u, key[v] = graph[u][v];
-	}
-
-
-	printMST(parent, graph);
-}
-
-
 int main()
 {
-	int graph[V][V] = { { 0, 2, 0, 6, 0 },
-						{ 2, 0, 3, 8, 5 },
-						{ 0, 3, 0, 0, 7 },
-						{ 6, 8, 0, 0, 9 },
-						{ 0, 5, 7, 9, 0 } };
+    cin >> n >> m;
+    for(int i = 1;i <=m;i++) {
+        int u,v,w;
+        cin >> u >> v >> w;
+        vec[u].push_back(ii(v,w));
+        e[i] = iii(w,ii(u,v));
 
-	V= 5;
-	primMST(graph);
+    }
+    sort(e + 1, e + 1 + m);
+    int c = 0;
+    for(int i = 1;i<=m;i++)
+    {
+        if(c < n-1)
+        {
+            if(get(e[i].second.second) != get(e[i].second.first))
+            {
+                unio(e[i].second.second,e[i].second.first);
+                res += e[i].first;
+                c++;
 
-	return 0;
+            }
+        }
+        else
+            {
+                break;
+            }
+    }
+    cout << res << "\n";
+
 }

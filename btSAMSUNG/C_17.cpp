@@ -3,80 +3,61 @@
 #include <algorithm>
 
 using namespace std;
-
 struct Edge {
-    int src, dest, weight;
-
-    Edge(int s, int d, int w) : src(s), dest(d), weight(w) {}
+    int u, v, weight;
+    bool operator<(Edge const& other) {
+        return weight < other.weight;
+    }
 };
+struct DSU {
+    vector<int> parent, rank;
 
-class Graph {
-private:
-    int V;
-    vector<Edge> edges;
-
-public:
-    Graph(int vertices) : V(vertices) {}
-
-    void addEdge(int src, int dest, int weight) {
-        edges.push_back(Edge(src, dest, weight));
+    DSU(int n) : parent(n), rank(n, 0) {
+        for (int i = 0; i < n; i++) parent[i] = i;
     }
 
-
-    void vyssotskyMST() {
-        vector<int> parent(V, -1);
-        vector<int> rank(V, 0);
-
-
-        sort(edges.begin(), edges.end(), [](const Edge &a, const Edge &b) {
-            return a.weight < b.weight;
-        });
-
-        for (const Edge &edge : edges) {
-            int x = find(parent, edge.src);
-            int y = find(parent, edge.dest);
-
-
-            if (x != y) {
-                cout << "Add edge: " << edge.src << " - " << edge.dest << "   Weight: " << edge.weight << "\n";
-                unionSets(parent, rank, x, y);
-            }
-        }
+    int find_set(int v) {
+        if (v == parent[v])
+            return v;
+        return parent[v] = find_set(parent[v]);
     }
 
-
-    int find(vector<int> &parent, int u) {
-        if (parent[u] == -1)
-            return u;
-        return find(parent, parent[u]);
-    }
-
-    void unionSets(vector<int> &parent, vector<int> &rank, int x, int y) {
-        int xRoot = find(parent, x);
-        int yRoot = find(parent, y);
-
-        if (rank[xRoot] < rank[yRoot])
-            parent[xRoot] = yRoot;
-        else if (rank[xRoot] > rank[yRoot])
-            parent[yRoot] = xRoot;
-        else {
-            parent[yRoot] = xRoot;
-            rank[xRoot]++;
+    void union_sets(int a, int b) {
+        a = find_set(a);
+        b = find_set(b);
+        if (a != b) {
+            if (rank[a] < rank[b])
+                swap(a, b);
+            parent[b] = a;
+            if (rank[a] == rank[b])
+                rank[a]++;
         }
     }
 };
 
 int main() {
+    int n, m;
+    cin >> n >> m;
+    vector<Edge> edges(m);
 
-    Graph g(4);
-    g.addEdge(0, 1, 20);
-    g.addEdge(0, 2,14);
-    g.addEdge(0, 3, 6);
-    g.addEdge(1, 3, 12);
-    g.addEdge(2, 3, 9);
+    for (int i = 0; i < m; i++) {
+        cin >> edges[i].u >> edges[i].v >> edges[i].weight;
+    }
 
+    sort(edges.begin(), edges.end());
 
-    g.vyssotskyMST();
+    DSU dsu(n);
+    vector<Edge> result;
+
+    for (Edge e : edges) {
+        if (dsu.find_set(e.u) != dsu.find_set(e.v)) {
+            result.push_back(e);
+            dsu.union_sets(e.u, e.v);
+        }
+    }
+    for (Edge e : result) {
+        cout << e.u << " -- " << e.v << " == " << e.weight << endl;
+    }
 
     return 0;
 }
